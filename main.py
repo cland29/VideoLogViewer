@@ -117,7 +117,7 @@ class MainWindow(QMainWindow):
 def main():
     print("Hello world")
 
-    capture = cv2.VideoCapture("videos/test.mp4")
+    capture = cv2.VideoCapture("videos/test_robot_video.mp4")
     chec, vid = capture.read()
     frame_list = []
     check = True
