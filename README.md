@@ -1,1 +1,1 @@
-# VideoLogViewr
+# VideoLogViewer
