@@ -9,6 +9,7 @@ import pandas as pd
 import cv2
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 import sys
 
 ## This method borrowed from this tutorial by github user docPhil99:
@@ -28,6 +29,7 @@ class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
+
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
 
@@ -54,9 +56,11 @@ class MainWindow(QMainWindow):
         firstFrame = video_frames[0]
         self.video_widget.setPixmap(QPixmap(self.convert_cv_qt(self.video_frames[0]).scaledToWidth(400)))
 
-        #df = pd.read_csv("fa")
-        sc = MplCanvas(self, width=5, height=4, dpi=100)
-        sc.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
+        self.df = pd.read_csv("fake_data_logs/fake_encoder_data.csv")
+        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        self.sc.axes.plot(self.df["time_stamp"], self.df["encoder_value"])
+        self.sc.axes.set_xlim([-10, 10])
+
 
 
 
@@ -65,7 +69,7 @@ class MainWindow(QMainWindow):
         layout_left.addWidget(slider_widget)
 
 
-        layout_right.addWidget(sc)
+        layout_right.addWidget(self.sc)
 
         layout = QHBoxLayout()
         layout.addLayout(layout_left)
@@ -81,6 +85,10 @@ class MainWindow(QMainWindow):
         cur_frame = self.video_frames[self.vid_pos]
         frame_pix_map = QPixmap(self.convert_cv_qt(cur_frame)).scaledToWidth(400)
         self.video_widget.setPixmap(frame_pix_map)
+        self.sc.axes.clear()
+        self.sc.axes.set_xlim(self.vid_pos - 10, self.vid_pos + 10)
+        self.sc.axes.plot(self.df["time_stamp"], self.df["encoder_value"])
+        self.sc.draw()
 
     ## This method adapoted from this tutorial by github user docPhil99:
     ## https://gist.github.com/docPhil99/ca4da12c9d6f29b9cea137b617c7b8b1
