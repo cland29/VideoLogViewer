@@ -4,9 +4,11 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from PyQt6 import uic
+import pandas as pd
 
 import cv2
-
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
 import sys
 
 ## This method borrowed from this tutorial by github user docPhil99:
@@ -22,31 +24,53 @@ class Color(QWidget):
         palette.setColor(QPalette.ColorRole.Window, QColor(color))
         self.setPalette(palette)
 
+class MplCanvas(FigureCanvasQTAgg):
 
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super(MplCanvas, self).__init__(fig)
 
 class MainWindow(QMainWindow):
     def __init__(self, video_frames,  *args, **kwargs):
         super(MainWindow, self).__init__(*args, ** kwargs)
         self.setWindowTitle("Video Log Viewer")
-        self.setFixedSize(QSize(400, 300))
+        self.setFixedWidth(800)
         #uic.loadUi('main_window.ui', self)
         self.vid_pos = 0
         self.video_frames = video_frames
 
-        layout = QVBoxLayout()
+        layout_left = QVBoxLayout()
+        layout_right = QVBoxLayout()
 
         slider_widget = QSlider(Qt.Orientation.Horizontal)
         slider_widget.setMinimum(0)
         slider_widget.setMaximum(len(video_frames) - 1)
         slider_widget.sliderMoved.connect(self.slider_position)
 
+
+
         self.video_widget = QLabel("Video")
         firstFrame = video_frames[0]
-        self.video_widget.setPixmap(QPixmap(self.convert_cv_qt(self.video_frames[0])))
+        self.video_widget.setPixmap(QPixmap(self.convert_cv_qt(self.video_frames[0]).scaledToWidth(400)))
+
+        #df = pd.read_csv("fa")
+        sc = MplCanvas(self, width=5, height=4, dpi=100)
+        sc.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
+
+
 
         ##layout adding
-        layout.addWidget(self.video_widget)
-        layout.addWidget(slider_widget)
+        layout_left.addWidget(self.video_widget)
+        layout_left.addWidget(slider_widget)
+
+
+        layout_right.addWidget(sc)
+
+        layout = QHBoxLayout()
+        layout.addLayout(layout_left)
+        layout.addLayout(layout_right)
+
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
@@ -55,7 +79,7 @@ class MainWindow(QMainWindow):
         print("vid position", p)
         self.vid_pos = p
         cur_frame = self.video_frames[self.vid_pos]
-        frame_pix_map = QPixmap(self.convert_cv_qt(cur_frame))
+        frame_pix_map = QPixmap(self.convert_cv_qt(cur_frame)).scaledToWidth(400)
         self.video_widget.setPixmap(frame_pix_map)
 
     ## This method adapoted from this tutorial by github user docPhil99:
